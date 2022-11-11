@@ -7,6 +7,7 @@ import {
   useSignal,
   useClientEffect$,
   useWatch$,
+  noSerialize,
 } from '@builder.io/qwik';
 import { isBrowser } from '@builder.io/qwik/build';
 
@@ -20,9 +21,9 @@ export const Use = ({ id }) => (
 );
 export const Symbol = component$(({ svgTxt, id }) => {
   console.log('render Symbol', id);
-  const symbols = useContext(SymbolsCtx);
-  //   // Make sure not to read from the store, so we don't rerender
-  //   if (!('symbols' in s)) s.symbols = noSerialize({});
+  const ctx = useContext(SymbolsCtx);
+  ctx.symbols ??= noSerialize({});
+  const { symbols } = ctx;
 
   const use = <Use id={id} />;
   if (symbols[id])
@@ -68,7 +69,7 @@ export const sym3 =
 
 export const Collection = component$(() => {
   console.log('render Collection');
-  const symbols = useContext(SymbolsCtx);
+  const { symbols } = useContext(SymbolsCtx);
   const trigger = useContext(TriggerCtx);
   const ref = useSignal();
 
@@ -84,15 +85,12 @@ export const Collection = component$(() => {
           el.parentNode.removeChild(el);
         return;
       }
+      debugger;
       console.log('add new symbols', count);
       for (const [id, txt] of Object.entries(symbols)) {
         if (txt === true) continue;
         symbols[id] = true;
-        const el = document.createElement('symbol');
-        el.id = id;
-        el.attributes.fill = 'currentColor';
-        el.innerHtml = txt;
-        ref.value.appendChild(el);
+        ref.value.insertAdjacentHtml('beforeend', toSymbol(id, txt));
       }
     },
     { eagerness: 'load' }
