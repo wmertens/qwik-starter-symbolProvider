@@ -38,7 +38,8 @@ export const Symbol = component$(({ svgTxt, id }) => {
   // Trigger render of Collection
   const trigger = useContext(TriggerCtx);
   if (isBrowser) {
-    trigger.value++;
+    // Update icons request outside render fn
+    setTimeout(() => trigger.value++, 0);
     return (
       <div>
         Symbol {id} added on browser: {use}
