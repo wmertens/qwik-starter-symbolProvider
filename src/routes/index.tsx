@@ -76,6 +76,7 @@ export const Collection = component$(() => {
     ({ track }) => {
       const count = track(() => trigger.value);
       if (!count) {
+        console.log('Collection on client');
         // add new symbols into svg ref
         for (const el of document.querySelectorAll('[data-collectme] symbol'))
           ref.value.appendChild(el);
@@ -93,7 +94,6 @@ export const Collection = component$(() => {
         el.innerHtml = txt;
         ref.value.appendChild(el);
       }
-      console.log('Collection on client');
     },
     { eagerness: 'load' }
   );
