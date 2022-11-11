@@ -86,6 +86,7 @@ export const Collection = component$(() => {
 
   useWatch$(({ track }) => {
     const count = track(() => trigger.value);
+    if (!isBrowser) return;
     console.log('add new symbols', count);
     for (const [id, txt] of Object.entries(symbols)) {
       if (txt === true) continue;
