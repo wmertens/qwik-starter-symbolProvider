@@ -69,7 +69,7 @@ export const sym3 =
 
 export const Collection = component$(() => {
   console.log('render Collection');
-  const { symbols } = useContext(SymbolsCtx);
+  const ctx = useContext(SymbolsCtx);
   const trigger = useContext(TriggerCtx);
   const ref = useSignal();
 
@@ -87,9 +87,9 @@ export const Collection = component$(() => {
       }
       debugger;
       console.log('add new symbols', count);
-      for (const [id, txt] of Object.entries(symbols)) {
+      for (const [id, txt] of Object.entries(ctx.symbols)) {
         if (txt === true) continue;
-        symbols[id] = true;
+        ctx.symbols[id] = true;
         ref.value.insertAdjacentHtml('beforeend', toSymbol(id, txt));
       }
     },
