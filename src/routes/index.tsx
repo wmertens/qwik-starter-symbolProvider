@@ -90,7 +90,7 @@ export const Collection = component$(() => {
       for (const [id, txt] of Object.entries(ctx.symbols)) {
         if (txt === true) continue;
         ctx.symbols[id] = true;
-        ref.value.insertAdjacentHtml('beforeend', toSymbol(id, txt));
+        ref.value.insertAdjacentHTML('beforeend', toSymbol(id, txt));
       }
     },
     { eagerness: 'load' }
