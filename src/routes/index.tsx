@@ -73,31 +73,31 @@ export const Collection = component$(() => {
   const ref = useSignal();
 
   useClientEffect$(
-    () => {
-      console.log('Collection on client');
-      // add new symbols into svg ref
-      for (const el of document.querySelectorAll('[data-collectme] symbol'))
+    ({ track }) => {
+      const count = track(() => trigger.value);
+      if (!count) {
+        // add new symbols into svg ref
+        for (const el of document.querySelectorAll('[data-collectme] symbol'))
+          ref.value.appendChild(el);
+        for (const el of document.querySelectorAll('[data-collectme]'))
+          el.parentNode.removeChild(el);
+        return;
+      }
+      console.log('add new symbols', count);
+      for (const [id, txt] of Object.entries(symbols)) {
+        if (txt === true) continue;
+        symbols[id] = true;
+        const el = document.createElement('symbol');
+        el.id = id;
+        el.attributes.fill = 'currentColor';
+        el.innerHtml = txt;
         ref.value.appendChild(el);
-      for (const el of document.querySelectorAll('[data-collectme]'))
-        el.parentNode.removeChild(el);
+      }
+      console.log('Collection on client');
     },
     { eagerness: 'load' }
   );
 
-  useWatch$(({ track }) => {
-    const count = track(() => trigger.value);
-    if (!isBrowser) return;
-    console.log('add new symbols', count);
-    for (const [id, txt] of Object.entries(symbols)) {
-      if (txt === true) continue;
-      symbols[id] = true;
-      const el = document.createElement('symbol');
-      el.id = id;
-      el.attributes.fill = 'currentColor';
-      el.innerHtml = txt;
-      ref.value.appendChild(el);
-    }
-  });
   // todo useclienteffect on load that tracks added and adds symbols to table, sets copied ones to true
   return <svg ref={ref} style={{ display: 'none' }} />;
 });
