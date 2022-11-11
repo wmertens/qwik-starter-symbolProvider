@@ -8,6 +8,7 @@ import {
   useSignal,
   noSerialize,
   useClientEffect$,
+  useWatch$,
 } from '@builder.io/qwik';
 import { isBrowser } from '@builder.io/qwik/build';
 
@@ -64,11 +65,14 @@ export const Collection = component$(() => {
   const symbolsCtx = useContext(SymbolsCtx);
   const trigger = useContext(TriggerCtx);
   const ref = useSignal();
+  useWatch$(({ track }) => {
+    const count = track(() => trigger.value);
+    console.log('add new symbols', count);
+  });
   useClientEffect$(
-    ({ track }) => {
-      const count = track(() => trigger.value);
+    () => {
+      console.log('Collection on client');
       // add new symbols into svg ref
-      console.log('Collection on client', count);
     },
     { eagerness: 'load' }
   );
