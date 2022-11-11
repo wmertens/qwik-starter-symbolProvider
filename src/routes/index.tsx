@@ -102,26 +102,25 @@ export const Collection = component$(() => {
   return <svg ref={ref} style={{ display: 'none' }} />;
 });
 
-export const RealProvider = component$(() => {
+export const Provider = component$(() => {
   console.log('render Provider');
   // bug? Should be in provider imho
   const s = useSignal(0);
   // Does not get tracked, simply provides a shared {}
   useContextProvider(SymbolsCtx, {});
   useContextProvider(TriggerCtx, s);
-  return <Slot />;
+  return (
+    <>
+      Slot:
+      <hr />
+      <Slot />
+      <hr />
+      &lt;Collection /&gt;: <Collection />
+      <hr />
+      Script: find all &lt;symbol&gt; elements and move them into the collection
+    </>
+  );
 });
-export const Provider = component$(() => (
-  <RealProvider>
-    Slot:
-    <hr />
-    <Slot />
-    <hr />
-    &lt;Collection /&gt;: <Collection />
-    <hr />
-    Script: find all &lt;symbol&gt; elements and move them into the collection
-  </RealProvider>
-));
 
 export const Sub = component$(() => (
   <>
