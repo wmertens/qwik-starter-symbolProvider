@@ -4,9 +4,7 @@ import {
   createContext,
   useContextProvider,
   useContext,
-  useStore,
   useSignal,
-  noSerialize,
   useClientEffect$,
   useWatch$,
 } from '@builder.io/qwik';
@@ -26,10 +24,11 @@ export const Symbol = component$(({ svgTxt, id }) => {
   //   // Make sure not to read from the store, so we don't rerender
   //   if (!('symbols' in s)) s.symbols = noSerialize({});
 
+  const use = <Use id={id} />;
   if (symbols[id])
     return (
       <div>
-        Symbol {id}: <Use id={id} />
+        Symbol {id}: {use}
       </div>
     );
 
@@ -37,17 +36,24 @@ export const Symbol = component$(({ svgTxt, id }) => {
   symbols[id] = svgTxt;
   // Trigger render of Collection
   const trigger = useContext(TriggerCtx);
-  if (isBrowser) trigger.value++;
+  if (isBrowser) {
+    trigger.value++;
+    return (
+      <div>
+        Symbol {id} added on browser: {use}
+      </div>
+    );
+  }
 
   return (
     <div>
-      Added symbol {id}:{' '}
+      Added SSR symbol {id}:{' '}
       <svg
-        sym:collectme
+        data-collectme
         style="display:none"
         dangerouslySetInnerHTML={toSymbol(id, svgTxt)}
       />
-      <Use id={id} />
+      {use}
     </div>
   );
 });
@@ -62,37 +68,44 @@ export const sym3 =
 
 export const Collection = component$(() => {
   console.log('render Collection');
-  const symbolsCtx = useContext(SymbolsCtx);
+  const symbols = useContext(SymbolsCtx);
   const trigger = useContext(TriggerCtx);
   const ref = useSignal();
-  useWatch$(({ track }) => {
-    const count = track(() => trigger.value);
-    console.log('add new symbols', count);
-  });
+
   useClientEffect$(
     () => {
       console.log('Collection on client');
       // add new symbols into svg ref
+      for (const el of document.querySelectorAll('[data-collectme] symbol'))
+        ref.value.appendChild(el);
+      for (const el of document.querySelectorAll('[data-collectme]'))
+        el.parentNode.removeChild(el);
     },
     { eagerness: 'load' }
   );
-  const symbols = Object.entries(symbolsCtx);
+
+  useWatch$(({ track }) => {
+    const count = track(() => trigger.value);
+    console.log('add new symbols', count);
+    for (const [id, txt] of Object.entries(symbols)) {
+      if (txt === true) continue;
+      symbols[id] = true;
+      const el = document.createElement('symbol');
+      el.id = id;
+      el.attributes.fill = 'currentColor';
+      el.innerHtml = txt;
+      ref.value.appendChild(el);
+    }
+  });
   // todo useclienteffect on load that tracks added and adds symbols to table, sets copied ones to true
-  return (
-    <svg
-      ref={ref}
-      dangerouslySetInnerHTML={symbols
-        .map(([id, t]) => toSymbol(id, t))
-        .join('')}
-      style={{ display: 'none' }}
-    />
-  );
+  return <svg ref={ref} style={{ display: 'none' }} />;
 });
 
 export const RealProvider = component$(() => {
   console.log('render Provider');
   // bug? Should be in provider imho
   const s = useSignal(0);
+  // Does not get tracked, simply provides a shared {}
   useContextProvider(SymbolsCtx, {});
   useContextProvider(TriggerCtx, s);
   return <Slot />;
